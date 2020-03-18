@@ -34,8 +34,8 @@ PAYLOAD = {
             "A"
         ]
     },
-    "page": 2,
-    "pageCnt": 40,
+    "page": 1,
+    "pageCnt": 20,
     "sort": "8",
     "isReturnTotal": True
 }
@@ -58,7 +58,18 @@ HEADERS = {
     "sid": "20200314101943900",
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36"
 }
-
 resp = requests.post('https://sinyiwebapi.sinyi.com.tw/searchObject.php', json=PAYLOAD, verify=False, headers=HEADERS)
-print(resp.json())
-print(len(resp.json()['content']['object']))
+import json
+result = []
+if resp.status_code == 200:
+    for obj in resp.json()['content']['object']:
+        if ("18" in obj['tags'] or "19" in obj['tags']) or obj['groupCompany'] or '租' in obj['name'] or '大學' in obj['name']:
+            lean_obj = {
+                'name': obj['name'],
+                'age': float(obj['age'].replace('年', '')),
+                'uniPrice': float(obj['uniPrice'].replace('萬/坪', '').strip()),
+                'shareURL': obj['shareURL']
+            }
+            result.append(lean_obj)
+from operator import itemgetter
+print(sorted(result, key=itemgetter('uniPrice')))
